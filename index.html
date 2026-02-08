@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Мир человека — Викторина для детей 5-6 лет</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFF8F0;
+  --primary: #FF6B35;
+  --primary-light: #FF9A6C;
+  --secondary: #4ECDC4;
+  --secondary-light: #7EDDD6;
+  --accent: #FFD93D;
+  --accent2: #6C5CE7;
+  --correct: #2ECC71;
+  --wrong: #E74C3C;
+  --text: #2D3436;
+  --text-light: #636E72;
+  --card: #FFFFFF;
+  --shadow: 0 8px 32px rgba(0,0,0,0.08);
+  --radius: 20px;
+  --radius-sm: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content:'';position:fixed;top:-50%;right:-30%;width:80vw;height:80vw;border-radius:50%;
+  background:radial-gradient(circle,rgba(78,205,196,0.08) 0%,transparent 70%);pointer-events:none;z-index:0;
+}
+.app { position:relative;z-index:1;max-width:820px;margin:0 auto;padding:16px;padding-bottom:50px; }
+
+/* Header */
+.header { text-align:center;padding:20px 10px 12px; }
+.header h1 { font-family:'Fredoka One',cursive;font-size:2rem;color:var(--primary);line-height:1.2;margin-bottom:4px; }
+.header .subtitle { font-size:0.9rem;color:var(--text-light);font-weight:600; }
+
+/* Progress */
+.progress-area { margin-bottom:18px; }
+.progress-info { display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:700;font-size:0.85rem;color:var(--text-light); }
+.progress-bar { width:100%;height:12px;background:#E8E8E8;border-radius:10px;overflow:hidden; }
+.progress-fill { height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:10px;transition:width 0.5s ease; }
+
+/* Score */
+.score-row { display:flex;gap:10px;justify-content:center;margin-bottom:14px;flex-wrap:wrap; }
+.score-badge { display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:30px;font-weight:700;font-size:0.82rem; }
+.score-badge.ok { background:rgba(46,204,113,0.15);color:#27AE60; }
+.score-badge.no { background:rgba(231,76,60,0.15);color:#C0392B; }
+
+/* Card */
+.card { background:var(--card);border-radius:var(--radius);padding:22px 18px;box-shadow:var(--shadow);margin-bottom:16px;animation:fadeUp .45s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+.topic-tag { display:inline-block;padding:4px 12px;border-radius:16px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px; }
+.t-clothes{background:#FFEAA7;color:#D4A017;} .t-house{background:#DFE6E9;color:#2E86C1;} .t-furniture{background:#E8D5F5;color:#7D3C98;}
+.t-dishes{background:#FFECD2;color:#E74C3C;} .t-tools{background:#C7ECEE;color:#117A65;} .t-transport{background:#FFD5D5;color:#E17055;}
+
+.q-type { font-size:0.7rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px; }
+.q-text { font-size:1.1rem;font-weight:700;line-height:1.5;margin-bottom:16px; }
+
+/* Picture cards for quiz */
+.pic-options { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.pic-options.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+.pic-opt {
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;
+  border:3px solid #E8E8E8;border-radius:var(--radius-sm);background:white;
+  cursor:pointer;transition:all .2s ease;text-align:center;position:relative;
+}
+.pic-opt:hover:not(.disabled) { border-color:var(--primary-light);transform:translateY(-3px);box-shadow:0 6px 20px rgba(255,107,53,0.13); }
+.pic-opt .pic-emoji { font-size:2.8rem;line-height:1; }
+.pic-opt .pic-label { font-weight:700;font-size:0.88rem;color:var(--text); }
+.pic-opt.sel-ok { border-color:var(--correct);background:rgba(46,204,113,0.07); }
+.pic-opt.sel-no { border-color:var(--wrong);background:rgba(231,76,60,0.07);animation:shake .4s ease; }
+.pic-opt.show-ok { border-color:var(--correct);background:rgba(46,204,113,0.05); }
+.pic-opt.disabled { cursor:default;pointer-events:none; }
+.pic-opt .check-icon { position:absolute;top:6px;right:8px;font-size:1.2rem; }
+
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+
+/* ===== LINE MATCHING ===== */
+.match-area { position:relative;user-select:none;touch-action:none; }
+.match-svg {
+  position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;
+}
+.match-svg line { stroke-width:3.5;stroke-linecap:round; }
+.match-cols { display:flex;justify-content:space-between;gap:10px;position:relative;z-index:3; }
+.match-col { display:flex;flex-direction:column;gap:10px;flex:0 0 44%; }
+.match-col-title { font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-light);text-align:center;margin-bottom:2px; }
+
+.m-item {
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:10px 6px;border:3px solid #E0E0E0;border-radius:var(--radius-sm);
+  background:white;cursor:pointer;transition:all .18s ease;text-align:center;
+  position:relative;
+}
+.m-item:hover:not(.matched):not(.disabled) { border-color:var(--primary-light);transform:scale(1.03); }
+.m-item .m-emoji { font-size:2.2rem;line-height:1; }
+.m-item .m-label { font-weight:700;font-size:0.82rem;color:var(--text);line-height:1.2; }
+.m-item.active { border-color:var(--primary);box-shadow:0 0 0 4px rgba(255,107,53,0.18);background:#FFF5EE;z-index:4; }
+.m-item.matched { border-color:var(--correct);background:rgba(46,204,113,0.06);cursor:default;opacity:.85; }
+.m-item.wrong-flash { border-color:var(--wrong);background:rgba(231,76,60,0.07);animation:shake .35s ease; }
+
+/* Color palette for lines */
+.line-0 { stroke:#FF6B35; } .line-1 { stroke:#4ECDC4; } .line-2 { stroke:#6C5CE7; } .line-3 { stroke:#E74C3C; }
+.line-4 { stroke:#F39C12; } .line-5 { stroke:#2ECC71; }
+
+/* Sort */
+.sort-list { display:flex;flex-direction:column;gap:10px; }
+.sort-item {
+  display:flex;align-items:center;gap:10px;padding:12px 14px;
+  border:3px solid #E0E0E0;border-radius:var(--radius-sm);background:white;
+  font-weight:700;font-size:0.92rem;transition:all .18s ease;user-select:none;
+}
+.sort-item .s-num { width:30px;height:30px;border-radius:50%;background:#F0F0F0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.82rem;color:var(--text-light);flex-shrink:0; }
+.sort-item .s-emoji { font-size:1.6rem;flex-shrink:0; }
+.sort-arrows { margin-left:auto;display:flex;gap:4px; }
+.s-arrow {
+  width:34px;height:34px;border:2px solid #E0E0E0;border-radius:8px;background:white;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+  transition:all .12s ease;color:var(--text-light);
+}
+.s-arrow:hover:not(:disabled) { border-color:var(--primary);color:var(--primary);background:#FFF5F0; }
+.s-arrow:disabled { opacity:.3;cursor:default; }
+
+/* Feedback */
+.fb { margin-top:14px;padding:12px 16px;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;display:flex;align-items:flex-start;gap:8px;animation:fadeUp .25s ease;line-height:1.4; }
+.fb.ok { background:rgba(46,204,113,0.12);color:#27AE60;border:2px solid rgba(46,204,113,0.25); }
+.fb.no { background:rgba(231,76,60,0.1);color:#C0392B;border:2px solid rgba(231,76,60,0.2); }
+.fb.info { background:rgba(108,92,231,0.1);color:var(--accent2);border:2px solid rgba(108,92,231,0.2); }
+
+/* Buttons */
+.btn-next {
+  display:block;width:100%;padding:15px;margin-top:14px;border:none;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;
+  font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;
+  transition:all .2s ease;box-shadow:0 4px 16px rgba(255,107,53,0.28);
+}
+.btn-next:hover { transform:translateY(-2px);box-shadow:0 6px 24px rgba(255,107,53,0.38); }
+.btn-check { background:linear-gradient(135deg,var(--secondary),var(--secondary-light));box-shadow:0 4px 16px rgba(78,205,196,0.28); }
+.btn-check:hover { box-shadow:0 6px 24px rgba(78,205,196,0.38); }
+
+/* Start screen */
+.theme-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px; }
+.theme-card {
+  padding:18px 10px;border:3px solid #E8E8E8;border-radius:var(--radius);background:white;
+  cursor:pointer;transition:all .2s ease;text-align:center;
+}
+.theme-card:hover { border-color:var(--primary-light);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.1); }
+.theme-card .t-emoji { font-size:2.4rem;display:block;margin-bottom:6px; }
+.theme-card .t-name { font-weight:800;font-size:0.85rem; }
+.btn-all {
+  margin-top:16px;padding:14px;border:3px dashed var(--secondary);border-radius:var(--radius-sm);
+  background:rgba(78,205,196,0.06);color:var(--secondary);font-family:'Nunito',sans-serif;
+  font-size:0.95rem;font-weight:800;cursor:pointer;transition:all .2s ease;width:100%;
+}
+.btn-all:hover { background:var(--secondary);color:white; }
+
+/* Result */
+.result { text-align:center;padding:30px 16px;animation:fadeUp .5s ease; }
+.r-emoji { font-size:4.5rem;margin-bottom:12px;animation:bounce 1.2s ease infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.r-title { font-family:'Fredoka One',cursive;font-size:1.8rem;color:var(--primary);margin-bottom:8px; }
+.r-score { font-size:1.1rem;font-weight:700;margin-bottom:4px; }
+.r-stars { font-size:2.2rem;margin:12px 0;letter-spacing:6px; }
+.r-msg { font-size:0.95rem;color:var(--text-light);font-weight:600;margin-bottom:20px;line-height:1.5; }
+.btn-restart {
+  display:inline-block;padding:13px 32px;border:none;border-radius:var(--radius-sm);
+  color:white;font-family:'Nunito',sans-serif;font-size:0.95rem;font-weight:800;
+  cursor:pointer;transition:all .2s ease;margin:4px;
+}
+.btn-g { background:linear-gradient(135deg,var(--secondary),#45B7AA);box-shadow:0 4px 14px rgba(78,205,196,0.3); }
+.btn-o { background:linear-gradient(135deg,var(--primary),var(--primary-light));box-shadow:0 4px 14px rgba(255,107,53,0.3); }
+.btn-restart:hover { transform:translateY(-2px); }
+
+.hidden { display:none!important; }
+@media(max-width:500px){
+  .header h1{font-size:1.5rem} .pic-options{grid-template-columns:1fr 1fr} .pic-options.cols-3{grid-template-columns:1fr 1fr 1fr}
+  .match-cols{gap:6px} .match-col{flex:0 0 46%} .m-item .m-emoji{font-size:1.8rem} .m-item .m-label{font-size:0.75rem}
+  .pic-opt .pic-emoji{font-size:2.2rem} .theme-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ===== EMOJI ICONS for items =====
+const E = {
+  // Clothes
+  ushanka:'🧣', dress:'👗', shorts:'🩳', boots:'🥾', jacket:'🧥', cap:'🧢', coat:'🧥', sweater:'🧶',
+  hat:'👒', gloves:'🧤', scarf:'🧣', tshirt:'👕', shoe:'👟', slipper:'🥿', highheels:'👠',
+  // House
+  house1:'🏠', house2:'🏘️', building:'🏢', brick:'🧱', wood:'🪵', window:'🪟',
+  kitchen:'🍳', bedroom:'🛏️', bathroom:'🛁', childroom:'🧸',
+  // Furniture
+  sofa:'🛋️', chair:'🪑', table:'🪑', bed:'🛏️', wardrobe:'🗄️', desk:'💼', bookshelf:'📚',
+  // Dishes
+  cup:'☕', pot:'🫕', pan:'🍳', plate:'🍽️', kettle:'🫖', pitcher:'🏺', fork:'🍴', sugar:'🍬',
+  // Tools
+  guitar:'🎸', piano:'🎹', violin:'🎻', trumpet:'🎺', hammer:'🔨', axe:'🪓',
+  shovel:'⛏️', pliers:'🔧', saw:'🪚', accordion:'🪗', rake:'🧹',
+  // Transport
+  ship:'🚢', boat:'⛵', truck:'🚛', tram:'🚋', train:'🚆', helicopter:'🚁',
+  plane:'✈️', bus:'🚌', car:'🚗', trolley:'🚎', scooter:'🛴',
+  // Seasons & misc
+  winter:'❄️', summer:'☀️', spring:'🌸', autumn:'🍂',
+  wash:'🧺', iron:'🔥', dry:'💨', clothes_pile:'👚',
+};
+
+// Line colors for matching
+const LINE_COLORS = ['#FF6B35','#4ECDC4','#6C5CE7','#E74C3C','#F39C12','#2ECC71'];
+
+// ============ QUESTIONS ============
+const QUESTIONS = {
+clothes: [
+  // --- MATCHING: Соедини вещь с группой ---
+  {
+    type:'match', topic:'clothes', topicName:'Одежда, обувь, головные уборы',
+    question:'Соедини каждую вещь с её группой — проведи линию!',
+    left:[
+      {emoji:'🧣', label:'Шапка-ушанка'},
+      {emoji:'🥾', label:'Сапоги'},
+      {emoji:'👗', label:'Платье'},
+      {emoji:'🧢', label:'Бейсболка'},
+    ],
+    right:[
+      {emoji:'🎩', label:'Головной убор'},
+      {emoji:'👟', label:'Обувь'},
+      {emoji:'👔', label:'Одежда'},
+      {emoji:'🎩', label:'Головной убор'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  // --- MATCHING: Сезонность ---
+  {
+    type:'match', topic:'clothes', topicName:'Одежда, обувь, головные уборы',
+    question:'В какое время года носят эти вещи? Проведи линии!',
+    left:[
+      {emoji:'🧣', label:'Шапка-ушанка'},
+      {emoji:'👗', label:'Сарафан'},
+      {emoji:'🥾', label:'Резиновые сапоги'},
+      {emoji:'🧥', label:'Куртка'},
+    ],
+    right:[
+      {emoji:'❄️', label:'Зимой'},
+      {emoji:'☀️', label:'Летом'},
+      {emoji:'🍂', label:'Осенью'},
+      {emoji:'🌸', label:'Весной / осенью'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  // --- MATCHING: Материал ---
+  {
+    type:'match', topic:'clothes', topicName:'Одежда, обувь, головные уборы',
+    question:'Из какого материала сделана каждая вещь? Соедини!',
+    left:[
+      {emoji:'🧥', label:'Шуба'},
+      {emoji:'🥾', label:'Сапоги резиновые'},
+      {emoji:'🧶', label:'Свитер'},
+      {emoji:'👠', label:'Туфли'},
+    ],
+    right:[
+      {emoji:'🐻', label:'Мех (меховая)'},
+      {emoji:'⚫', label:'Резина (резиновые)'},
+      {emoji:'🧵', label:'Шерсть (шерстяной)'},
+      {emoji:'🟤', label:'Кожа (кожаные)'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  // --- QUIZ: Из чего состоит бейсболка ---
+  {
+    type:'quiz', topic:'clothes', topicName:'Одежда, обувь, головные уборы',
+    question:'🧢 Из каких частей состоит бейсболка?',
+    options:[
+      {emoji:'🧢', label:'Клинья, козырёк, застёжка'},
+      {emoji:'🧤', label:'Пальцы, ладонь, манжета'},
+      {emoji:'👟', label:'Подошва, шнурки, язычок'},
+    ],
+    correct:0,
+    explanation:'Бейсболка состоит из клиньев, длинного козырька и застёжки.'
+  },
+  // --- QUIZ: Кто носит ---
+  {
+    type:'quiz', topic:'clothes', topicName:'Одежда, обувь, головные уборы',
+    question:'👠 Туфли на каблуке носят обычно:',
+    options:[
+      {emoji:'👩', label:'Женщины'},
+      {emoji:'👦', label:'Дети'},
+      {emoji:'👨', label:'Мужчины'},
+    ],
+    correct:0,
+    explanation:'Туфли на высоком каблуке — это женская обувь.'
+  },
+  // --- SORT: Уход за одеждой ---
+  {
+    type:'sort', topic:'clothes', topicName:'Одежда, обувь, головные уборы',
+    question:'Расставь по порядку: как мама ухаживает за одеждой?',
+    items:[
+      {emoji:'👚', label:'Собирает грязную одежду'},
+      {emoji:'🫧', label:'Стирает в машинке'},
+      {emoji:'💨', label:'Развешивает сушить'},
+      {emoji:'👔', label:'Гладит утюгом'},
+    ],
+    correctOrder:[0,1,2,3],
+  },
+],
+
+house: [
+  {
+    type:'match', topic:'house', topicName:'Дом и его части',
+    question:'Из какого материала сделан каждый дом? Проведи линии!',
+    left:[
+      {emoji:'🏡', label:'Деревенский дом'},
+      {emoji:'🏢', label:'Многоэтажка'},
+      {emoji:'🏠', label:'Кирпичный дом'},
+      {emoji:'🪨', label:'Старинный дом'},
+    ],
+    right:[
+      {emoji:'🪵', label:'Брёвна (бревенчатый)'},
+      {emoji:'🧱', label:'Панели (панельный)'},
+      {emoji:'🟫', label:'Кирпичи (кирпичный)'},
+      {emoji:'�ite', label:'Камни (каменный)'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  {
+    type:'match', topic:'house', topicName:'Дом и его части',
+    question:'Что делают в каждой комнате? Соедини!',
+    left:[
+      {emoji:'🍳', label:'Кухня'},
+      {emoji:'🛏️', label:'Спальня'},
+      {emoji:'🛁', label:'Ванная'},
+      {emoji:'🧸', label:'Детская'},
+    ],
+    right:[
+      {emoji:'🥘', label:'Готовят еду'},
+      {emoji:'😴', label:'Спят'},
+      {emoji:'🚿', label:'Моются'},
+      {emoji:'🎮', label:'Играют'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  {
+    type:'quiz', topic:'house', topicName:'Дом и его части',
+    question:'🏠 У дома 1 этаж. Какой он?',
+    options:[
+      {emoji:'1️⃣', label:'Одноэтажный'},
+      {emoji:'5️⃣', label:'Пятиэтажный'},
+      {emoji:'🔟', label:'Многоэтажный'},
+    ],
+    correct:0, explanation:'Дом с одним этажом — одноэтажный.'
+  },
+  {
+    type:'quiz', topic:'house', topicName:'Дом и его части',
+    question:'🏘️ Маленький дом в деревне — какой?',
+    options:[
+      {emoji:'🌾', label:'Деревенский'},
+      {emoji:'🏙️', label:'Городской'},
+      {emoji:'🚀', label:'Космический'},
+    ],
+    correct:0, explanation:'Дом в деревне — деревенский, в городе — городской.'
+  },
+  {
+    type:'sort', topic:'house', topicName:'Дом и его части',
+    question:'Расставь по порядку: как строят дом?',
+    items:[
+      {emoji:'⛏️', label:'Роют котлован'},
+      {emoji:'🧱', label:'Делают фундамент'},
+      {emoji:'🏗️', label:'Выкладывают стены'},
+      {emoji:'🪟', label:'Вставляют окна и двери'},
+    ],
+    correctOrder:[0,1,2,3],
+  },
+],
+
+furniture: [
+  {
+    type:'match', topic:'furniture', topicName:'Мебель',
+    question:'Для чего нужна эта мебель? Проведи линии!',
+    left:[
+      {emoji:'🛏️', label:'Кровать'},
+      {emoji:'📝', label:'Письменный стол'},
+      {emoji:'📚', label:'Книжный шкаф'},
+      {emoji:'🪑', label:'Стул'},
+    ],
+    right:[
+      {emoji:'😴', label:'Спать'},
+      {emoji:'✍️', label:'Писать и читать'},
+      {emoji:'📖', label:'Хранить книги'},
+      {emoji:'🧘', label:'Сидеть'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  {
+    type:'match', topic:'furniture', topicName:'Мебель',
+    question:'Из какого материала сделана мебель? Соедини!',
+    left:[
+      {emoji:'🪑', label:'Деревянный стол'},
+      {emoji:'🛋️', label:'Кожаное кресло'},
+      {emoji:'🪑', label:'Пластмассовый стульчик'},
+      {emoji:'🛏️', label:'Металлическая кровать'},
+    ],
+    right:[
+      {emoji:'🪵', label:'Дерево'},
+      {emoji:'🟤', label:'Кожа'},
+      {emoji:'🔵', label:'Пластмасса'},
+      {emoji:'⚙️', label:'Металл'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  {
+    type:'quiz', topic:'furniture', topicName:'Мебель',
+    question:'🛋️ На чём можно и сидеть, и лежать?',
+    options:[
+      {emoji:'🛋️', label:'Диван'},
+      {emoji:'🪑', label:'Табурет'},
+      {emoji:'📚', label:'Шкаф'},
+    ],
+    correct:0, explanation:'На диване можно и сидеть, и лежать.'
+  },
+  {
+    type:'quiz', topic:'furniture', topicName:'Мебель',
+    question:'👶 Детский стульчик — мебель для кого?',
+    options:[
+      {emoji:'👶', label:'Для детей'},
+      {emoji:'👨', label:'Для взрослых'},
+      {emoji:'🐕', label:'Для животных'},
+    ],
+    correct:0, explanation:'Детский стульчик — это мебель для детей.'
+  },
+  {
+    type:'sort', topic:'furniture', topicName:'Мебель',
+    question:'Расставь по порядку: как делали уборку?',
+    items:[
+      {emoji:'🧹', label:'Ваня пропылесосил ковёр'},
+      {emoji:'🧽', label:'Маша протёрла стол'},
+      {emoji:'🍽️', label:'Мама вымыла посуду'},
+      {emoji:'📚', label:'Папа расставил книги'},
+    ],
+    correctOrder:[0,1,2,3],
+  },
+],
+
+dishes: [
+  {
+    type:'match', topic:'dishes', topicName:'Посуда',
+    question:'К какой группе относится посуда? Проведи линии!',
+    left:[
+      {emoji:'🫕', label:'Кастрюля'},
+      {emoji:'🍽️', label:'Тарелка'},
+      {emoji:'☕', label:'Чашка'},
+      {emoji:'🍳', label:'Сковородка'},
+    ],
+    right:[
+      {emoji:'🔥', label:'Кухонная'},
+      {emoji:'🍽️', label:'Столовая'},
+      {emoji:'🫖', label:'Чайная'},
+      {emoji:'🔥', label:'Кухонная'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  {
+    type:'match', topic:'dishes', topicName:'Посуда',
+    question:'Из какого материала сделана посуда? Соедини!',
+    left:[
+      {emoji:'🫕', label:'Кастрюля'},
+      {emoji:'🏺', label:'Кувшин'},
+      {emoji:'🥛', label:'Стакан'},
+      {emoji:'🥣', label:'Деревянная ложка'},
+    ],
+    right:[
+      {emoji:'⚙️', label:'Металл (металлическая)'},
+      {emoji:'🟤', label:'Глина (глиняный)'},
+      {emoji:'💎', label:'Стекло (стеклянный)'},
+      {emoji:'🪵', label:'Дерево (деревянная)'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  {
+    type:'quiz', topic:'dishes', topicName:'Посуда',
+    question:'☕ Из чашки человек обычно:',
+    options:[
+      {emoji:'🍵', label:'Пьёт чай'},
+      {emoji:'🍲', label:'Варит суп'},
+      {emoji:'🔪', label:'Режет хлеб'},
+    ],
+    correct:0, explanation:'Из чашки человек пьёт чай или другие напитки.'
+  },
+  {
+    type:'quiz', topic:'dishes', topicName:'Посуда',
+    question:'🫕 Из каких частей состоит кастрюля?',
+    options:[
+      {emoji:'🫕', label:'Дно, стенки, ручки, крышка'},
+      {emoji:'🧢', label:'Козырёк, клинья, застёжка'},
+      {emoji:'🪑', label:'Ножки, сиденье, спинка'},
+    ],
+    correct:0, explanation:'У кастрюли есть дно, стенки, две ручки и крышка.'
+  },
+  {
+    type:'sort', topic:'dishes', topicName:'Посуда',
+    question:'Расставь по порядку: как готовили обед?',
+    items:[
+      {emoji:'🫕', label:'Мама поставила кастрюлю на плиту'},
+      {emoji:'🥕', label:'Ваня помыл овощи'},
+      {emoji:'🍽️', label:'Маша разложила еду по тарелкам'},
+      {emoji:'🔪', label:'Папа нарезал хлеб'},
+    ],
+    correctOrder:[0,1,2,3],
+  },
+],
+
+tools: [
+  {
+    type:'match', topic:'tools', topicName:'Инструменты',
+    question:'Какой это инструмент — рабочий или музыкальный? Соедини!',
+    left:[
+      {emoji:'🎸', label:'Гитара'},
+      {emoji:'🔨', label:'Молоток'},
+      {emoji:'🎹', label:'Пианино'},
+      {emoji:'🪓', label:'Топор'},
+    ],
+    right:[
+      {emoji:'🎵', label:'Музыкальный'},
+      {emoji:'🔧', label:'Рабочий'},
+      {emoji:'🎵', label:'Музыкальный'},
+      {emoji:'🔧', label:'Рабочий'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  {
+    type:'quiz', topic:'tools', topicName:'Инструменты',
+    question:'🎸 Гитара — это какой музыкальный инструмент?',
+    options:[
+      {emoji:'🎸', label:'Струнный'},
+      {emoji:'🥁', label:'Ударный'},
+      {emoji:'🎺', label:'Духовой'},
+    ],
+    correct:0, explanation:'Гитара — струнный инструмент, у неё есть струны.'
+  },
+  {
+    type:'quiz', topic:'tools', topicName:'Инструменты',
+    question:'⛏️ Из каких частей состоит лопата?',
+    options:[
+      {emoji:'⛏️', label:'Черенок (ручка) и штык'},
+      {emoji:'🎹', label:'Клавиши и педали'},
+      {emoji:'🎸', label:'Гриф и струны'},
+    ],
+    correct:0, explanation:'У лопаты есть черенок (деревянная ручка) и штык (металлическое лезвие).'
+  },
+  {
+    type:'match', topic:'tools', topicName:'Инструменты',
+    question:'Для чего нужен каждый инструмент? Соедини!',
+    left:[
+      {emoji:'🔨', label:'Молоток'},
+      {emoji:'🪓', label:'Топор'},
+      {emoji:'⛏️', label:'Лопата'},
+      {emoji:'🎸', label:'Гитара'},
+    ],
+    right:[
+      {emoji:'📌', label:'Забивать гвозди'},
+      {emoji:'🪵', label:'Рубить дрова'},
+      {emoji:'🕳️', label:'Копать землю'},
+      {emoji:'🎵', label:'Играть музыку'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+],
+
+transport: [
+  {
+    type:'match', topic:'transport', topicName:'Транспорт',
+    question:'Какой это вид транспорта? Проведи линии!',
+    left:[
+      {emoji:'🚢', label:'Пароход'},
+      {emoji:'🚋', label:'Трамвай'},
+      {emoji:'🚁', label:'Вертолёт'},
+      {emoji:'🚛', label:'Самосвал'},
+    ],
+    right:[
+      {emoji:'🌊', label:'Водный'},
+      {emoji:'🛤️', label:'Наземный'},
+      {emoji:'☁️', label:'Воздушный'},
+      {emoji:'🛤️', label:'Наземный'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  {
+    type:'quiz', topic:'transport', topicName:'Транспорт',
+    question:'🚢 Пароход перевозит людей и грузы по чему?',
+    options:[
+      {emoji:'🌊', label:'По воде'},
+      {emoji:'🛤️', label:'По земле'},
+      {emoji:'☁️', label:'По воздуху'},
+    ],
+    correct:0, explanation:'Пароход — водный транспорт. Он плавает по воде.'
+  },
+  {
+    type:'quiz', topic:'transport', topicName:'Транспорт',
+    question:'🚃 Корпус вагонов поезда сделан из чего?',
+    options:[
+      {emoji:'⚙️', label:'Из металла'},
+      {emoji:'🪵', label:'Из дерева'},
+      {emoji:'📄', label:'Из бумаги'},
+    ],
+    correct:0, explanation:'Корпус вагонов поезда сделан из металла, окна — из прочного стекла.'
+  },
+  {
+    type:'match', topic:'transport', topicName:'Транспорт',
+    question:'Для чего нужен каждый транспорт? Соедини!',
+    left:[
+      {emoji:'🚌', label:'Автобус'},
+      {emoji:'🚛', label:'Самосвал'},
+      {emoji:'✈️', label:'Самолёт'},
+      {emoji:'⛵', label:'Лодка'},
+    ],
+    right:[
+      {emoji:'👨‍👩‍👧‍👦', label:'Перевозить людей по городу'},
+      {emoji:'📦', label:'Перевозить грузы'},
+      {emoji:'🌍', label:'Летать в другие города'},
+      {emoji:'🎣', label:'Плавать по реке'},
+    ],
+    pairs:[[0,0],[1,1],[2,2],[3,3]],
+  },
+  {
+    type:'sort', topic:'transport', topicName:'Транспорт',
+    question:'Расставь по порядку: как папа ездил в командировку?',
+    items:[
+      {emoji:'🏠', label:'Вышел из дома'},
+      {emoji:'🚌', label:'Доехал на автобусе до аэропорта'},
+      {emoji:'✈️', label:'Полетел на самолёте'},
+      {emoji:'🚕', label:'Приехал в город на такси'},
+    ],
+    correctOrder:[0,1,2,3],
+  },
+],
+};
+
+const TOPICS = {
+  clothes:{name:'Одежда, обувь, головные уборы',emoji:'👗',cls:'t-clothes'},
+  house:{name:'Дом и его части',emoji:'🏠',cls:'t-house'},
+  furniture:{name:'Мебель',emoji:'🛋️',cls:'t-furniture'},
+  dishes:{name:'Посуда',emoji:'🍽️',cls:'t-dishes'},
+  tools:{name:'Инструменты',emoji:'🔧',cls:'t-tools'},
+  transport:{name:'Транспорт',emoji:'🚗',cls:'t-transport'},
+};
+
+// ===== STATE =====
+let S = { screen:'start', topic:null, qs:[], ci:0, score:0, wrong:0, answered:false, sel:null, ms:null, ss:null };
+
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+const $=id=>document.getElementById(id);
+
+function render(){ const app=$('app'); if(S.screen==='start') renderStart(app); else if(S.screen==='quiz') renderQuiz(app); else renderResult(app); }
+
+function renderStart(app){
+  let h=`<div class="header"><h1>🌟 Мир человека</h1><div class="subtitle">Викторина для детей 5–6 лет</div><div style="font-size:.75rem;color:var(--text-light);margin-top:2px;opacity:.6">По альбому Н.Е. Арбековой</div></div>`;
+  h+=`<div class="card"><div class="q-text" style="text-align:center;margin-bottom:0">Выбери тему:</div></div><div class="theme-grid">`;
+  for(const[k,t] of Object.entries(TOPICS)){
+    h+=`<div class="theme-card" onclick="go('${k}')"><span class="t-emoji">${t.emoji}</span><span class="t-name">${t.name}</span></div>`;
+  }
+  h+=`</div><button class="btn-all" onclick="goAll()">🎯 Все темы сразу</button>`;
+  app.innerHTML=h;
+}
+
+function go(k){ S.topic=k; S.qs=shuffle(QUESTIONS[k]); S.ci=0; S.score=0; S.wrong=0; S.answered=false; S.sel=null; S.ms=null; S.ss=null; S.screen='quiz'; render(); }
+function goAll(){ S.topic='all'; let a=[]; for(const v of Object.values(QUESTIONS)) a=a.concat(v); S.qs=shuffle(a); S.ci=0; S.score=0; S.wrong=0; S.answered=false; S.sel=null; S.ms=null; S.ss=null; S.screen='quiz'; render(); }
+
+function renderQuiz(app){
+  const q=S.qs[S.ci], total=S.qs.length, ti=TOPICS[q.topic]||{}, pct=(S.ci/total)*100;
+  let h=`<div class="header"><h1>🌟 Мир человека</h1></div>`;
+  h+=`<div class="progress-area"><div class="progress-info"><span>Вопрос ${S.ci+1} из ${total}</span><span>⭐ ${S.score}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+  h+=`<div class="score-row"><span class="score-badge ok">✅ ${S.score}</span><span class="score-badge no">❌ ${S.wrong}</span></div>`;
+  h+=`<div class="card"><span class="topic-tag ${ti.cls||''}">${ti.emoji||''} ${ti.name||''}</span>`;
+
+  if(q.type==='quiz') h+=renderQuizQ(q);
+  else if(q.type==='match') h+=renderMatchQ(q);
+  else if(q.type==='sort') h+=renderSortQ(q);
+
+  if(S.answered){
+    const last=S.ci>=S.qs.length-1;
+    h+=`<button class="btn-next" onclick="next()">${last?'🏆 Результаты':'➡️ Дальше'}</button>`;
+  }
+  h+=`</div>`;
+  app.innerHTML=h;
+
+  // After render, position SVG lines for match
+  if(q.type==='match' && S.ms) drawLines();
+}
+
+// ===== QUIZ TYPE =====
+function renderQuizQ(q){
+  let h=`<div class="q-type">Выбери правильный ответ</div><div class="q-text">${q.question}</div><div class="pic-options${q.options.length===3?' cols-3':''}">`;
+  q.options.forEach((o,i)=>{
+    let c='pic-opt';
+    if(S.answered){ c+=' disabled'; if(i===q.correct) c+=' sel-ok show-ok'; if(S.sel===i&&i!==q.correct) c+=' sel-no'; }
+    h+=`<div class="${c}" onclick="ansQuiz(${i})"><span class="pic-emoji">${o.emoji}</span><span class="pic-label">${o.label}</span>`;
+    if(S.answered&&i===q.correct) h+=`<span class="check-icon">✅</span>`;
+    if(S.answered&&S.sel===i&&i!==q.correct) h+=`<span class="check-icon">❌</span>`;
+    h+=`</div>`;
+  });
+  h+=`</div>`;
+  if(S.answered){
+    const ok=S.sel===q.correct;
+    h+=`<div class="fb ${ok?'ok':'no'}">${ok?'🎉 Правильно!':'😕 Неправильно.'} ${q.explanation||''}</div>`;
+  }
+  return h;
+}
+function ansQuiz(i){ if(S.answered) return; S.answered=true; S.sel=i; if(i===S.qs[S.ci].correct) S.score++; else S.wrong++; render(); }
+
+// ===== MATCH TYPE (with lines) =====
+function renderMatchQ(q){
+  if(!S.ms) S.ms={selL:null, selR:null, matched:[], rightShuffle:shuffle([...Array(q.right.length).keys()]), wrongs:0, done:false};
+  const ms=S.ms;
+  let h=`<div class="q-type">Соедини пары — нажми слева, потом справа</div><div class="q-text">${q.question}</div>`;
+  h+=`<div class="match-area" id="matchArea"><svg class="match-svg" id="matchSvg"></svg><div class="match-cols">`;
+  // Left
+  h+=`<div class="match-col"><div class="match-col-title">🔵 Предмет</div>`;
+  q.left.forEach((it,i)=>{
+    const isMatched=ms.matched.some(m=>m[0]===i);
+    let c='m-item'; if(isMatched) c+=' matched'; else if(ms.selL===i) c+=' active';
+    h+=`<div class="${c}" id="mL${i}" onclick="mSelL(${i})"><span class="m-emoji">${it.emoji}</span><span class="m-label">${it.label}</span></div>`;
+  });
+  h+=`</div>`;
+  // Right
+  h+=`<div class="match-col"><div class="match-col-title">🟠 Ответ</div>`;
+  ms.rightShuffle.forEach(ri=>{
+    const isMatched=ms.matched.some(m=>m[1]===ri);
+    let c='m-item'; if(isMatched) c+=' matched'; else if(ms.selR===ri) c+=' active';
+    h+=`<div class="${c}" id="mR${ri}" onclick="mSelR(${ri})"><span class="m-emoji">${q.right[ri].emoji}</span><span class="m-label">${q.right[ri].label}</span></div>`;
+  });
+  h+=`</div></div></div>`;
+  if(ms.done){
+    const ok=ms.wrongs===0;
+    h+=`<div class="fb ${ok?'ok':'info'}">${ok?'🎉 Отлично! Все пары верные!':'👍 Задание выполнено! Ошибок: '+ms.wrongs}</div>`;
+  }
+  return h;
+}
+function drawLines(){
+  const svg=$('matchSvg');
+  if(!svg) return;
+  const area=$('matchArea');
+  const rect=area.getBoundingClientRect();
+  svg.setAttribute('viewBox',`0 0 ${rect.width} ${rect.height}`);
+  svg.innerHTML='';
+  const ms=S.ms;
+  ms.matched.forEach((m,idx)=>{
+    const elL=$('mL'+m[0]), elR=$('mR'+m[1]);
+    if(!elL||!elR) return;
+    const rL=elL.getBoundingClientRect(), rR=elR.getBoundingClientRect();
+    const x1=rL.right-rect.left, y1=rL.top+rL.height/2-rect.top;
+    const x2=rR.left-rect.left, y2=rR.top+rR.height/2-rect.top;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+    line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+    line.setAttribute('stroke',LINE_COLORS[idx%LINE_COLORS.length]);
+    line.setAttribute('stroke-width','3.5');
+    line.setAttribute('stroke-linecap','round');
+    // Animate
+    const len=Math.sqrt((x2-x1)**2+(y2-y1)**2);
+    line.setAttribute('stroke-dasharray',len);
+    line.setAttribute('stroke-dashoffset',len);
+    line.style.animation=`drawLine 0.4s ease forwards`;
+    svg.appendChild(line);
+  });
+}
+// CSS for line animation
+if(!document.getElementById('lineStyle')){
+  const st=document.createElement('style'); st.id='lineStyle';
+  st.textContent=`@keyframes drawLine{to{stroke-dashoffset:0}}`;
+  document.head.appendChild(st);
+}
+
+function mSelL(i){ if(S.answered) return; const ms=S.ms; if(ms.matched.some(m=>m[0]===i)) return; ms.selL=i; if(ms.selR!==null) tryMatch(); render(); }
+function mSelR(i){ if(S.answered) return; const ms=S.ms; if(ms.matched.some(m=>m[1]===i)) return; ms.selR=i; if(ms.selL!==null) tryMatch(); render(); }
+function tryMatch(){
+  const ms=S.ms, q=S.qs[S.ci], li=ms.selL, ri=ms.selR;
+  const ok=q.pairs.some(p=>p[0]===li&&p[1]===ri);
+  if(ok){ ms.matched.push([li,ri]); } else { ms.wrongs++; }
+  ms.selL=null; ms.selR=null;
+  if(ms.matched.length===q.left.length){ ms.done=true; S.answered=true; if(!ms.wrongs) S.score++; else S.wrong++; }
+  render();
+  // Flash wrong
+  if(!ok){
+    const elL=$('mL'+li), elR=$('mR'+ri);
+    if(elL){elL.classList.add('wrong-flash'); setTimeout(()=>elL.classList.remove('wrong-flash'),400);}
+    if(elR){elR.classList.add('wrong-flash'); setTimeout(()=>elR.classList.remove('wrong-flash'),400);}
+  }
+}
+
+// ===== SORT TYPE =====
+function renderSortQ(q){
+  if(!S.ss) S.ss={order:shuffle([...Array(q.items.length).keys()]),checked:false,ok:false};
+  const ss=S.ss;
+  let h=`<div class="q-type">Расставь по порядку</div><div class="q-text">${q.question}</div><div class="sort-list">`;
+  ss.order.forEach((ii,pos)=>{
+    const it=q.items[ii];
+    h+=`<div class="sort-item"><span class="s-num">${pos+1}</span><span class="s-emoji">${it.emoji}</span><span>${it.label}</span>`;
+    h+=`<div class="sort-arrows"><button class="s-arrow" onclick="sMove(${pos},-1)" ${pos===0||ss.checked?'disabled':''}">⬆</button><button class="s-arrow" onclick="sMove(${pos},1)" ${pos===ss.order.length-1||ss.checked?'disabled':''}>⬇</button></div></div>`;
+  });
+  h+=`</div>`;
+  if(!ss.checked) h+=`<button class="btn-next btn-check" onclick="sCheck()">✅ Проверить порядок</button>`;
+  else {
+    h+=`<div class="fb ${ss.ok?'ok':'no'}">${ss.ok?'🎉 Правильный порядок!':'😕 Правильный порядок: '+q.items.map(i=>i.label).join(' → ')}</div>`;
+  }
+  return h;
+}
+function sMove(p,d){ if(S.answered) return; const ss=S.ss, np=p+d; if(np<0||np>=ss.order.length) return; [ss.order[p],ss.order[np]]=[ss.order[np],ss.order[p]]; render(); }
+function sCheck(){ const ss=S.ss, q=S.qs[S.ci]; ss.checked=true; S.answered=true; ss.ok=ss.order.every((v,i)=>v===q.correctOrder[i]); if(ss.ok) S.score++; else S.wrong++; render(); }
+
+// ===== NEXT =====
+function next(){ S.ci++; S.answered=false; S.sel=null; S.ms=null; S.ss=null; if(S.ci>=S.qs.length) S.screen='result'; render(); }
+
+// ===== RESULT =====
+function renderResult(app){
+  const total=S.qs.length, pct=Math.round(S.score/total*100);
+  let stars=1; if(pct>=40) stars=2; if(pct>=70) stars=3; if(pct>=90) stars=4; if(pct===100) stars=5;
+  let em='😊',msg='Попробуй ещё раз — у тебя получится лучше!';
+  if(pct>=50){em='👍';msg='Хороший результат! Молодец!';}
+  if(pct>=80){em='🎉';msg='Замечательно! Ты отлично знаешь тему!';}
+  if(pct===100){em='🏆';msg='Великолепно! Идеальный результат!';}
+  const st='⭐'.repeat(stars)+'☆'.repeat(5-stars);
+  const tn=S.topic==='all'?'Все темы':(TOPICS[S.topic]?.name||'');
+  app.innerHTML=`<div class="header"><h1>🌟 Мир человека</h1></div><div class="card"><div class="result">
+    <div class="r-emoji">${em}</div><div class="r-title">Результаты!</div>
+    <div class="r-score">${tn}</div><div class="r-score">Правильно: ${S.score} из ${total} (${pct}%)</div>
+    <div class="r-stars">${st}</div><div class="r-msg">${msg}</div>
+    <button class="btn-restart btn-g" onclick="S.screen='start';render()">🏠 К темам</button>
+    <button class="btn-restart btn-o" onclick="retry()">🔄 Ещё раз</button>
+  </div></div>`;
+}
+function retry(){ if(S.topic==='all') goAll(); else go(S.topic); }
+
+// Redraw lines on resize
+window.addEventListener('resize',()=>{ if(S.screen==='quiz'&&S.ms&&S.ms.matched.length) drawLines(); });
+
+render();
+</script>
+</body>
+</html>
