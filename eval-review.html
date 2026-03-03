@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eval Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F4F6FA;
+  --primary: #4A6FA5;
+  --primary-light: #6B8EC4;
+  --secondary: #4ECDC4;
+  --accent: #FFD93D;
+  --correct: #2ECC71;
+  --wrong: #E74C3C;
+  --text: #2D3436;
+  --text-light: #636E72;
+  --card: #FFFFFF;
+  --border: #E0E4EA;
+  --shadow: 0 4px 20px rgba(0,0,0,0.07);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ===== Layout ===== */
+.page { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
+
+/* ===== Header ===== */
+.header {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+}
+.header h1 { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
+.header .subtitle { font-size: 0.85rem; color: var(--text-light); font-weight: 600; margin-top: 4px; line-height: 1.4; }
+
+/* ===== Tabs ===== */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: var(--card);
+  padding: 6px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 10px rgba(74,111,165,0.25);
+}
+.tab-btn:hover:not(.active) { background: var(--bg); color: var(--primary); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===== Card ===== */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.section-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-light);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-label .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: inline-block;
+}
+
+/* ===== Prompt / Output content ===== */
+.content-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text);
+  min-height: 60px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.empty-note {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 0.88rem;
+}
+
+/* ===== Collapsible ===== */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 14px 18px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text);
+  transition: background 0.15s ease;
+  user-select: none;
+}
+.collapsible-header:hover { background: #F0F3F9; }
+.collapsible-header .arrow {
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+  color: var(--text-light);
+}
+.collapsible-header.open .arrow { transform: rotate(90deg); }
+.collapsible-body {
+  background: var(--card);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  margin-top: -14px;
+  margin-bottom: 14px;
+  display: none;
+}
+.collapsible-body.open { display: block; }
+
+/* ===== Grades ===== */
+.grades-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grade-item { display: flex; flex-direction: column; gap: 5px; }
+.grade-item label { font-size: 0.78rem; font-weight: 700; color: var(--text-light); }
+.grade-select {
+  padding: 8px 10px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  appearance: none;
+}
+.grade-select:focus { outline: none; border-color: var(--primary); }
+
+/* ===== Feedback ===== */
+.feedback-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.prev-feedback-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.prev-feedback-btn:hover { border-color: var(--primary); color: var(--primary); }
+.feedback-textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--bg);
+  resize: vertical;
+  transition: border-color 0.15s ease;
+  line-height: 1.5;
+}
+.feedback-textarea:focus { outline: none; border-color: var(--primary); }
+
+/* ===== Navigation ===== */
+.nav-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.btn-nav {
+  padding: 11px 20px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-nav:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.btn-nav:disabled { opacity: 0.35; cursor: default; }
+.btn-submit {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(74,111,165,0.28);
+  transition: all 0.2s ease;
+}
+.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(74,111,165,0.36); }
+
+/* ===== Counter ===== */
+.counter {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-light);
+  margin-bottom: 14px;
+}
+
+/* ===== Benchmark tab ===== */
+.benchmark-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.benchmark-empty .bm-icon { font-size: 2.8rem; margin-bottom: 12px; }
+
+/* ===== Done overlay ===== */
+.done-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.done-overlay.visible { display: flex; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.done-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+.done-card h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+.done-card p {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+.btn-row {
+  display: flex;
+  justify-content: center;
+}
+.btn-row button {
+  padding: 12px 36px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(74,111,165,0.28);
+  transition: all 0.2s ease;
+}
+.btn-row button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(74,111,165,0.36); }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #2D3436;
+  color: white;
+  padding: 11px 22px;
+  border-radius: 30px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 200;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 500px) {
+  .grades-grid { grid-template-columns: 1fr; }
+  .nav-row { flex-wrap: wrap; }
+  .btn-nav { flex: 1; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Eval Review: <span id="review-title">Quiz Outputs</span></h1>
+    <div class="subtitle">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="outputs" onclick="switchTab('outputs')">Outputs</button>
+    <button class="tab-btn" data-tab="benchmark" onclick="switchTab('benchmark')">Benchmark</button>
+  </div>
+
+  <!-- Outputs tab -->
+  <div class="tab-panel active" id="tab-outputs">
+    <div class="counter" id="counter">Output 1 of 1</div>
+
+    <!-- Prompt -->
+    <div class="card">
+      <div class="section-label"><span class="dot"></span> Prompt</div>
+      <div class="content-box" id="prompt-content">
+        <span class="empty-note">No prompt available.</span>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div class="card">
+      <div class="section-label"><span class="dot" style="background:var(--secondary)"></span> Output</div>
+      <div class="content-box" id="output-content">
+        <span class="empty-note">No output files found</span>
+      </div>
+    </div>
+
+    <!-- Previous Output (collapsible) -->
+    <div class="collapsible-header" id="prev-output-header" onclick="toggleCollapsible('prev-output')">
+      <span>Previous Output</span>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="collapsible-body" id="prev-output-body">
+      <div class="content-box">
+        <span class="empty-note">No previous output available.</span>
+      </div>
+    </div>
+
+    <!-- Formal Grades (collapsible) -->
+    <div class="collapsible-header" id="formal-grades-header" onclick="toggleCollapsible('formal-grades')">
+      <span>Formal Grades</span>
+      <span class="arrow">▶</span>
+    </div>
+    <div class="collapsible-body" id="formal-grades-body">
+      <div class="grades-grid">
+        <div class="grade-item">
+          <label>Accuracy</label>
+          <select class="grade-select" id="grade-accuracy">
+            <option value="">— Select —</option>
+            <option value="5">5 – Excellent</option>
+            <option value="4">4 – Good</option>
+            <option value="3">3 – Fair</option>
+            <option value="2">2 – Poor</option>
+            <option value="1">1 – Very Poor</option>
+          </select>
+        </div>
+        <div class="grade-item">
+          <label>Completeness</label>
+          <select class="grade-select" id="grade-completeness">
+            <option value="">— Select —</option>
+            <option value="5">5 – Excellent</option>
+            <option value="4">4 – Good</option>
+            <option value="3">3 – Fair</option>
+            <option value="2">2 – Poor</option>
+            <option value="1">1 – Very Poor</option>
+          </select>
+        </div>
+        <div class="grade-item">
+          <label>Clarity</label>
+          <select class="grade-select" id="grade-clarity">
+            <option value="">— Select —</option>
+            <option value="5">5 – Excellent</option>
+            <option value="4">4 – Good</option>
+            <option value="3">3 – Fair</option>
+            <option value="2">2 – Poor</option>
+            <option value="1">1 – Very Poor</option>
+          </select>
+        </div>
+        <div class="grade-item">
+          <label>Overall</label>
+          <select class="grade-select" id="grade-overall">
+            <option value="">— Select —</option>
+            <option value="5">5 – Excellent</option>
+            <option value="4">4 – Good</option>
+            <option value="3">3 – Fair</option>
+            <option value="2">2 – Poor</option>
+            <option value="1">1 – Very Poor</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Your Feedback -->
+    <div class="card">
+      <div class="feedback-label-row">
+        <div class="section-label" style="margin-bottom:0"><span class="dot" style="background:var(--accent)"></span> Your Feedback</div>
+        <button class="prev-feedback-btn" onclick="loadPreviousFeedback()">Previous feedback</button>
+      </div>
+      <br>
+      <textarea
+        class="feedback-textarea"
+        id="feedback"
+        placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+      ></textarea>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-row">
+      <button class="btn-nav" id="btn-prev" onclick="navigate(-1)">← Previous</button>
+      <button class="btn-submit" onclick="submitAllReviews()">Submit All Reviews</button>
+      <button class="btn-nav" id="btn-next" onclick="navigate(1)">Next →</button>
+    </div>
+  </div>
+
+  <!-- Benchmark tab -->
+  <div class="tab-panel" id="tab-benchmark">
+    <div class="card">
+      <div class="benchmark-empty">
+        <div class="bm-icon">📊</div>
+        No benchmark data available. Run a benchmark to see quantitative results here.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Done overlay -->
+<div class="done-overlay" id="done-overlay">
+  <div class="done-card">
+    <h2>Review Complete</h2>
+    <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+    <div class="btn-row">
+      <button onclick="closeDoneDialog()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== State =====
+const state = {
+  current: 0,
+  outputs: [],          // array of { prompt, output, prevOutput }
+  feedbacks: [],        // array of { text, grades }
+  activeTab: 'outputs',
+};
+
+// ===== Tab switching =====
+function switchTab(name) {
+  state.activeTab = name;
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.dataset.tab === name) btn.classList.add('active');
+  });
+}
+
+// ===== Collapsible sections =====
+function toggleCollapsible(id) {
+  const header = document.getElementById(id + '-header');
+  const body = document.getElementById(id + '-body');
+  const isOpen = body.classList.contains('open');
+  if (isOpen) {
+    body.classList.remove('open');
+    header.classList.remove('open');
+  } else {
+    body.classList.add('open');
+    header.classList.add('open');
+  }
+}
+
+// ===== Navigation =====
+function navigate(dir) {
+  saveCurrent();
+  const total = state.outputs.length;
+  const next = state.current + dir;
+  if (next < 0 || (total > 0 && next >= total)) return;
+  state.current = next;
+  renderCurrent();
+}
+
+function renderCurrent() {
+  const idx = state.current;
+  const total = Math.max(state.outputs.length, 1);
+  document.getElementById('counter').textContent = `Output ${idx + 1} of ${total}`;
+
+  const out = state.outputs[idx];
+  document.getElementById('prompt-content').innerHTML =
+    out && out.prompt ? escHtml(out.prompt) : '<span class="empty-note">No prompt available.</span>';
+  document.getElementById('output-content').innerHTML =
+    out && out.output ? escHtml(out.output) : '<span class="empty-note">No output files found</span>';
+
+  const prevBox = document.querySelector('#prev-output-body .content-box');
+  prevBox.innerHTML = out && out.prevOutput
+    ? escHtml(out.prevOutput)
+    : '<span class="empty-note">No previous output available.</span>';
+
+  const fb = state.feedbacks[idx] || {};
+  document.getElementById('feedback').value = fb.text || '';
+  document.getElementById('grade-accuracy').value = (fb.grades && fb.grades.accuracy) || '';
+  document.getElementById('grade-completeness').value = (fb.grades && fb.grades.completeness) || '';
+  document.getElementById('grade-clarity').value = (fb.grades && fb.grades.clarity) || '';
+  document.getElementById('grade-overall').value = (fb.grades && fb.grades.overall) || '';
+
+  document.getElementById('btn-prev').disabled = idx === 0;
+  document.getElementById('btn-next').disabled = idx >= total - 1;
+}
+
+function saveCurrent() {
+  const idx = state.current;
+  if (!state.feedbacks[idx]) state.feedbacks[idx] = {};
+  state.feedbacks[idx].text = document.getElementById('feedback').value;
+  state.feedbacks[idx].grades = {
+    accuracy: document.getElementById('grade-accuracy').value,
+    completeness: document.getElementById('grade-completeness').value,
+    clarity: document.getElementById('grade-clarity').value,
+    overall: document.getElementById('grade-overall').value,
+  };
+}
+
+// ===== Load previous feedback =====
+function loadPreviousFeedback() {
+  if (state.current === 0) { showToast('No previous feedback available'); return; }
+  const prev = state.feedbacks[state.current - 1];
+  if (prev && prev.text) {
+    document.getElementById('feedback').value = prev.text;
+    showToast('Previous feedback loaded');
+  } else {
+    showToast('No previous feedback available');
+  }
+}
+
+// ===== Submit all =====
+function submitAllReviews() {
+  saveCurrent();
+  // Show done overlay
+  document.getElementById('done-overlay').classList.add('visible');
+}
+
+// ===== Done dialog =====
+function closeDoneDialog() {
+  document.getElementById('done-overlay').classList.remove('visible');
+  showToast('Feedback saved ✓');
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ===== Keyboard navigation =====
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if (e.key === 'ArrowRight') navigate(1);
+});
+
+// ===== Helpers =====
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ===== Init =====
+renderCurrent();
+</script>
+</body>
+</html>
